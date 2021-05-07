@@ -1,19 +1,48 @@
-// NO LONGER NEEDED. EMPLOYEE DATA WILL BE IMPORTED FROM EMPLOYEES.JSON FILE
-// CREATE AN ARRAY OF EMPLOYEES
-// let arrEmployees = [
-//     [34123413, "Zak Ruvalcaba", 3424, "zak@vectacorp.com", "Executive"],
-//     [23424665, "Sally Smith", 2344, "sally@vectacorp.com", "Administrative"],
-//     [12341244, "Mark Martin", 5352, "mark@vectacorp.com", "Sales"],
-//     [14545423, "Robin Banks", 7867, "robin@vectacorp.com", "Marketing"],
-//     [13413453, "Sue Wedge", 1235, "sue@vectacorp.com", "QA"]
-// ];
+
+//import {fetchEmployees} from './modules/init.js';
 
 // GET DOM ELEMENTS
 let empTable    = document.querySelector('#employees');
 let empCount    = document.querySelector('#empCount');
 
-// BUILD THE EMPLOYEES TABLE WHEN THE PAGE LOADS
-buildGrid(fetchEmployees());
+async function fetchEmployees() {
+    try {
+        const response = await fetch('../data/employees.json');
+        const employees = await response.json();
+        return employees
+    } catch (error) {
+        return error;
+    }
+}
+fetchEmployees()
+    .then (employees => {
+        // REMOVE THE EXISTING SET OF ROWS BY REMOVING THE ENTIRE TBODY SECTION
+        empTable.lastElementChild.remove();
+        // REBUILD THE TBODY FROM SCRATCH
+        let tbody = document.createElement('tbody');
+        // LOOP THROUGH THE ARRAY OF EMPLOYEES
+        // REBUILDING THE ROW STRUCTURE
+        for (let employee of employees) {
+            tbody.innerHTML += 
+            `
+            <tr>
+                <td>${employee.id}</td>
+                <td>${employee.name}</td>
+                <td>${employee.ext}</td>
+                <td><a href="mailto:${employee.email}">${employee.email}</a></td>
+                <td>${employee.department}</td>
+                <td><button class="btn btn-sm btn-danger delete">X</button></td>
+            </tr>
+            `
+        }
+        // BIND THE TBODY TO THE EMPLOYEE TABLE
+        empTable.appendChild(tbody);
+        // UPDATE EMPLOYEE COUNT
+        empCount.value = `(${employees.length})`;
+    }) 
+    .catch (error => {
+        return error;
+    });
 
 // DELETE EMPLOYEE
 empTable.addEventListener('click', (e) => {
@@ -24,41 +53,8 @@ empTable.addEventListener('click', (e) => {
             let rowIndex = e.target.parentNode.parentNode.rowIndex;
             // REMOVE EMPLOYEE FROM ARRAY
             empTable.deleteRow(rowIndex);
+            // UPDATE EMPLOYEE COUNT
+            empCount.value = `(${rowIndex-1})`;
         }
     }
 });
-
-// BUILD THE EMPLOYEES GRID
-function buildGrid(Employees) {
-fetch()
-    .then( Employees => {
-        // REMOVE THE EXISTING SET OF ROWS BY REMOVING THE ENTIRE TBODY SECTION
-        empTable.lastElementChild.remove();
-        // REBUILD THE TBODY FROM SCRATCH
-        let tbody = document.createElement('tbody');
-        // LOOP THROUGH THE ARRAY OF EMPLOYEES
-        // REBUILDING THE ROW STRUCTURE
-        for (let employee of Employees) {
-            tbody.innerHTML += 
-            `
-            <tr>
-                <td>${employee.id}</td>
-                <td>${employee.name}</td>
-                <td>${employee.ext}</td>
-                <td>${employee.email}</td>
-                <td>${employee.department}</td>
-                <td><a href="mailto:${employee[3]}">${employee[3]}</a></td>
-                <td>${employee[4]}</td>
-                <td><button class="btn btn-sm btn-danger delete">X</button></td>
-            </tr>
-            `
-        }
-    })
-    .cath( e => console.log(e.message) );
-
-
-    // BIND THE TBODY TO THE EMPLOYEE TABLE
-    empTable.appendChild(tbody);
-    // UPDATE EMPLOYEE COUNT
-    empCount.value = `(${arrEmployees.length})`;
-};
